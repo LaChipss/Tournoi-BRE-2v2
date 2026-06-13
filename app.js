@@ -32,7 +32,7 @@ let currentMatch = {
 
 // ==================== ADMIN STATE ====================
 let isAdmin = false;
-const ADMIN_PASSWORD = "1234"; // Mot de passe d'administration par défaut (facilement modifiable)
+const ADMIN_PASSWORD = "HuebaldCaca"; // Mot de passe d'administration par défaut (facilement modifiable)
 
 function checkAdminStatus() {
     const urlParams = new URLSearchParams(window.location.search);
