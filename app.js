@@ -4,7 +4,7 @@
 const firebaseConfig = {
     apiKey: "",
     authDomain: "",
-    databaseURL: "", // Mettez l'URL de votre Realtime Database ici (ex: https://mon-tournoi-default-rtdb.firebaseio.com/)
+    databaseURL: "https://script.google.com/macros/s/AKfycbxzKTdGeoKAMCtMQm_SRiDXneMun58ptq8RozvLlLrK44WElWt9a6T-TM-ZKQYhgtmV/exec", // Mettez l'URL de votre Realtime Database ici (ex: https://mon-tournoi-default-rtdb.firebaseio.com/)
     projectId: "",
     storageBucket: "",
     messagingSenderId: "",
