@@ -1,10 +1,16 @@
-// ==================== FIREBASE CONFIGURATION ====================
-// Remplissez ces informations avec vos clés Firebase pour activer la base de données en ligne.
-// Si databaseURL est vide ou invalide, l'application fonctionnera automatiquement en local (localStorage).
+// ==================== CONFIGURATION DE SYNCHRONISATION EN LIGNE ====================
+// Choisissez UNE des deux méthodes pour synchroniser vos données en ligne.
+// Si les deux sont vides, l'application fonctionnera en local (localStorage).
+
+// --- MÉTHODE A : Google Apps Script (100% GRATUIT, SANS CARTE BANCAIRE) ---
+// Renseignez l'URL de votre Web App Google Apps Script ici :
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxzKTdGeoKAMCtMQm_SRiDXneMun58ptq8RozvLlLrK44WElWt9a6T-TM-ZKQYhgtmV/exec";
+
+// --- MÉTHODE B : Firebase Realtime Database (Optionnel) ---
 const firebaseConfig = {
     apiKey: "",
     authDomain: "",
-    databaseURL: "https://script.google.com/macros/s/AKfycbxzKTdGeoKAMCtMQm_SRiDXneMun58ptq8RozvLlLrK44WElWt9a6T-TM-ZKQYhgtmV/exec", // Mettez l'URL de votre Realtime Database ici (ex: https://mon-tournoi-default-rtdb.firebaseio.com/)
+    databaseURL: "", // Laissez vide si vous utilisez la méthode A
     projectId: "",
     storageBucket: "",
     messagingSenderId: "",
@@ -13,6 +19,7 @@ const firebaseConfig = {
 
 let db = null;
 let useFirebase = false;
+let useGoogleScript = false;
 
 // ==================== DATA STORE ====================
 const STORAGE_KEY = 'arena2v2_data';
@@ -121,7 +128,23 @@ function toggleAdminMode() {
 
 // ==================== PERSISTENCE ====================
 function saveState() {
-    if (useFirebase && db) {
+    if (useGoogleScript) {
+        // Envoi simple sans header JSON pour éviter le preflight CORS (OPTIONS)
+        fetch(GOOGLE_SCRIPT_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            body: JSON.stringify(state)
+        })
+        .then(() => {
+            showToast("Données enregistrées en ligne !");
+            // Sauvegarde locale en cache
+            saveLocalState();
+        })
+        .catch(e => {
+            console.error("Erreur de sauvegarde Google Script :", e);
+            showToast("Erreur de sauvegarde en ligne", "error");
+        });
+    } else if (useFirebase && db) {
         db.ref('arena2v2_state').set(state).catch(e => {
             console.error("Erreur de sauvegarde Firebase :", e);
             showToast("Erreur de sauvegarde en ligne", "error");
@@ -152,8 +175,12 @@ function loadLocalState() {
     }
 }
 
-function initFirebase() {
-    if (typeof firebase !== 'undefined' && firebaseConfig.databaseURL && firebaseConfig.databaseURL !== "") {
+function initOnlineSync() {
+    if (GOOGLE_SCRIPT_URL && GOOGLE_SCRIPT_URL !== "") {
+        useGoogleScript = true;
+        console.log("Synchronisation Google Apps Script configurée !");
+        loadOnlineSyncData();
+    } else if (typeof firebase !== 'undefined' && firebaseConfig.databaseURL && firebaseConfig.databaseURL !== "") {
         try {
             firebase.initializeApp(firebaseConfig);
             db = firebase.database();
@@ -179,8 +206,37 @@ function initFirebase() {
             loadLocalState();
         }
     } else {
-        console.log("Firebase non configuré ou non importé. Utilisation du stockage local (localStorage).");
+        console.log("Aucune synchronisation en ligne configurée. Utilisation du stockage local (localStorage).");
         loadLocalState();
+    }
+}
+
+function loadOnlineSyncData(quiet = false) {
+    if (useGoogleScript) {
+        if (!quiet) showToast("Synchronisation en ligne...", "info");
+        
+        fetch(GOOGLE_SCRIPT_URL, { redirect: 'follow' })
+            .then(res => res.json())
+            .then(data => {
+                if (data) {
+                    state.teams = data.teams || [];
+                    state.matches = data.matches || [];
+                    saveLocalState(); // Met à jour le cache local
+                    renderAll();
+                    if (!quiet) showToast("Données actualisées !", "success");
+                }
+            })
+            .catch(err => {
+                console.error("Erreur de récupération Google Script :", err);
+                if (!quiet) showToast("Erreur de chargement en ligne.", "error");
+                loadLocalState();
+                renderAll();
+            });
+    } else if (useFirebase) {
+        // Avec Firebase, les données se mettent à jour toutes seules via le listener on('value')
+        if (!quiet) showToast("Données en temps réel (Firebase) actives", "success");
+    } else {
+        if (!quiet) showToast("Mode local activé (pas de base de données en ligne)", "info");
     }
 }
 
@@ -1064,6 +1120,12 @@ function initEvents() {
         adminLock.addEventListener('click', toggleAdminMode);
     }
 
+    // Actualiser / Sync
+    const btnSync = document.getElementById('btn-sync');
+    if (btnSync) {
+        btnSync.addEventListener('click', () => loadOnlineSyncData(false));
+    }
+
     // Footer
     document.getElementById('btn-export').addEventListener('click', exportData);
     document.getElementById('btn-import').addEventListener('click', importData);
@@ -1074,10 +1136,8 @@ function initEvents() {
 // ==================== INIT ====================
 document.addEventListener('DOMContentLoaded', () => {
     checkAdminStatus();
-    initFirebase();
+    initOnlineSync();
     initEvents();
     updateAdminUI();
     renderAll();
 });
-npm i @vercel/speed-insights
-import { SpeedInsights } from "@vercel/speed-insights/next"
