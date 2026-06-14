@@ -6,17 +6,6 @@
 // Renseignez l'URL de votre Web App Google Apps Script ici :
 const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxzKTdGeoKAMCtMQm_SRiDXneMun58ptq8RozvLlLrK44WElWt9a6T-TM-ZKQYhgtmV/exec";
 
-// --- MÉTHODE B : Firebase Realtime Database (Optionnel) ---
-const firebaseConfig = {
-    apiKey: "",
-    authDomain: "",
-    databaseURL: "", // Laissez vide si vous utilisez la méthode A
-    projectId: "",
-    storageBucket: "",
-    messagingSenderId: "",
-    appId: ""
-};
-
 let db = null;
 let useFirebase = false;
 let useGoogleScript = false;
