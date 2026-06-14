@@ -4,7 +4,7 @@
 
 // --- MÉTHODE A : Google Apps Script (100% GRATUIT, SANS CARTE BANCAIRE) ---
 // Renseignez l'URL de votre Web App Google Apps Script ici :
-const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxzKTdGeoKAMCtMQm_SRiDXneMun58ptq8RozvLlLrK44WElWt9a6T-TM-ZKQYhgtmV/exec";
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxhqL__4UFPiVsW7gi0imHXmsGUVKkvwMO0ik0DzAI57WaAmdVds8CexdhEbOLWw28-Hw/exec";
 
 let db = null;
 let useFirebase = false;
@@ -204,7 +204,10 @@ function loadOnlineSyncData(quiet = false) {
     if (useGoogleScript) {
         if (!quiet) showToast("Synchronisation en ligne...", "info");
         
-        fetch(GOOGLE_SCRIPT_URL, { redirect: 'follow' })
+       fetch(GOOGLE_SCRIPT_URL + "?t=" + Date.now(), {
+  method: "GET",
+  mode: "no-cors"
+})
             .then(res => res.json())
             .then(data => {
                 if (data) {
